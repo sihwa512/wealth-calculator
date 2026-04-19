@@ -86,7 +86,7 @@ init_values()
 def reset_values():
     st.session_state.init_cap = 1000000
     st.session_state.mon_inv = 10000
-    st.session_state.rate = 6.5
+    st.session_state.rate = 10
     st.session_state.yrs = 20
 
 # 3. 核心計算邏輯
