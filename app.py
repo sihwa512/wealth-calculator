@@ -8,13 +8,22 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ================= 頂級質感 CSS 魔法 (解決手機截斷與佈局) =================
+# ================= 頂級質感 CSS 魔法 (新增文字提亮修復) =================
 st.markdown("""
 <style>
     /* 全局深色底色與字體 */
     [data-testid="stAppViewContainer"] { background-color: #0E1117; }
     * { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; }
     
+    /* 🌟 關鍵修復：大幅提亮輸入框的標題文字與一般段落，保護眼睛 🌟 */
+    div[data-testid="stNumberInput"] label p, 
+    div[data-testid="stMarkdownContainer"] p, 
+    h4 {
+        color: #F8FAFC !important; /* 使用極明亮的灰白色 */
+        font-weight: 500 !important;
+        letter-spacing: 0.5px;
+    }
+
     /* 自訂數據卡片 */
     .metric-card {
         background-color: #1E1E24;
@@ -25,13 +34,12 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
     .metric-label {
-        color: #888888;
+        color: #A0A5B5;
         font-size: 0.9rem;
         margin-bottom: 5px;
     }
     .metric-value {
         color: #4B8BF5;
-        /* 關鍵：使用 clamp 確保手機上數字會縮小不截斷 */
         font-size: clamp(1.2rem, 5vw, 2.2rem);
         font-weight: 700;
         letter-spacing: -1px;
@@ -50,7 +58,7 @@ st.markdown("""
         border-radius: 10px;
         background-color: #262730;
         border: 1px solid #4B8BF5;
-        color: white;
+        color: #F8FAFC !important; /* 按鈕文字也提亮 */
         font-weight: bold;
         padding: 10px 0;
         transition: 0.3s;
@@ -97,7 +105,7 @@ final = df.iloc[-1]
 
 # ================= 頁面配置 =================
 
-st.markdown("<h2 style='text-align:center; color:white; font-size:1.8rem;'>💰 專業資產增長儀表板</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align:center; color:white; font-size:1.8rem; margin-bottom: 25px;'>💰 專業資產增長儀表板</h2>", unsafe_allow_html=True)
 
 # --- A. 頂部自訂卡片列 ---
 c_kpi1, c_kpi2, c_kpi3 = st.columns(3)
@@ -110,8 +118,8 @@ with c_kpi3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# --- B. 參數控制區 (手動輸入 + 加減按鈕) ---
-st.markdown("<p style='color:#888; margin-bottom:0;'>⚙️ 投資參數設定</p>", unsafe_allow_html=True)
+# --- B. 參數控制區 ---
+st.markdown("#### ⚙️ 投資參數設定")
 ctrl_col1, ctrl_col2 = st.columns(2)
 with ctrl_col1:
     st.number_input("初始資金 (NTD)", key='init_cap', step=10000, format="%d")
@@ -120,9 +128,11 @@ with ctrl_col2:
     st.number_input("每月定期定額", key='mon_inv', step=1000, format="%d")
     st.number_input("投資年限 (年)", key='yrs', step=1, format="%d")
 
+st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
 st.button("🔄 恢復預設設定", on_click=reset_values, use_container_width=True)
 
 # --- C. 置底報表表格 ---
-st.markdown("<p style='color:#888; margin-top:20px; margin-bottom:5px;'>📋 歷年資產增長明細</p>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: 35px;'></div>", unsafe_allow_html=True)
+st.markdown("#### 📋 歷年資產增長明細")
 styled_df = df.style.format({"累積本金": "{:,}", "投資獲利": "{:,}", "總資產": "{:,}"})
-st.dataframe(styled_df, use_container_width=True, hide_index=True, height=300)
+st.dataframe(styled_df, use_container_width=True, hide_index=True, height=350)
