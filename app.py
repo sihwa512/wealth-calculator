@@ -1,67 +1,80 @@
 import streamlit as st
 import pandas as pd
 
-# 1. 頁面基本設定 (隱藏預設的選單，讓畫面更像獨立 APP)
+# 1. 頁面基本設定
 st.set_page_config(
     page_title="精準資產計算機", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# ================= 視覺美化 CSS 魔法 =================
+# ================= 手機版與視覺美化 CSS =================
 st.markdown("""
 <style>
-    /* 全局字體與背景優化 */
+    /* 全局字體設定 */
     * { font-family: 'Helvetica Neue', Arial, sans-serif; }
     
-    /* 頂部數據卡片美化 */
-    div[data-testid="metric-container"] {
-        background-color: #1E1E24; /* 深色質感背景 */
-        border: 1px solid #333333;
-        border-radius: 12px;
-        padding: 20px 25px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* 立體微陰影 */
-        transition: transform 0.2s ease;
-    }
-    div[data-testid="metric-container"]:hover {
-        transform: translateY(-2px); /* 滑鼠游標移過去會微微浮起 */
-    }
-    div[data-testid="metric-container"] label {
-        color: #A0A5B5 !important;
-        font-size: 1.1rem !important;
-        font-weight: 500;
-        margin-bottom: 5px;
-    }
-    div[data-testid="metric-container"] div {
-        color: #FFFFFF !important;
-        font-size: 2.2rem !important;
-        font-weight: 700 !important;
+    /* 1. 響應式主標題 (手機上自動縮小) */
+    .main-title {
+        text-align: center;
+        color: #4B8BF5;
+        margin-bottom: 20px;
+        font-size: clamp(1.5rem, 5vw, 2.5rem);
+        font-weight: bold;
     }
 
-    /* 重設按鈕美化 */
-    button[kind="secondary"] {
-        background-color: #2D2F36;
+    /* 2. 自訂響應式數據卡片 (解決手機版垂直堆疊與截斷問題) */
+    .dashboard-container {
+        display: grid;
+        /* 在手機上會盡量擠在同一排，並允許換行 */
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+    .kpi-card {
+        background-color: #1E1E24;
+        border: 1px solid #333333;
+        border-radius: 12px;
+        padding: 15px 5px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .kpi-label {
+        color: #A0A5B5;
+        font-size: clamp(0.7rem, 2.5vw, 1rem); /* 字體自動縮放 */
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    .kpi-value {
         color: #FFFFFF;
-        border: 1px solid #4B8BF5;
-        border-radius: 8px;
-        font-weight: bold;
-        letter-spacing: 1px;
-        transition: all 0.3s ease;
+        font-size: clamp(1.1rem, 4vw, 2rem); /* 數字自動縮放，絕不截斷 */
+        font-weight: 700;
+        word-wrap: break-word;
     }
-    button[kind="secondary"]:hover {
-        background-color: #4B8BF5;
-        color: white;
-        border-color: #4B8BF5;
-        box-shadow: 0 0 15px rgba(75, 139, 245, 0.4);
+
+    /* 3. 強制手機版輸入框變成 2x2 網格 (節省垂直空間) */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+        }
+        /* 讓左右兩欄在手機上強制各佔 48% 寬度 */
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            min-width: 48% !important;
+            flex: 1 1 48% !important;
+        }
     }
-    
-    /* 隱藏表格預設的醜醜 index 列，並讓表格更俐落 */
+
+    /* 按鈕與表格美化 */
+    button[kind="secondary"] {
+        background-color: #2D2F36; color: #FFFFFF; border: 1px solid #4B8BF5;
+        border-radius: 8px; font-weight: bold; padding: 10px; margin-top: 5px;
+    }
     .stDataFrame { border-radius: 10px; overflow: hidden; }
 </style>
 """, unsafe_allow_html=True)
 # =========================================================
 
-# 2. 初始化預設值與重設邏輯
+# 2. 初始化與重設邏輯
 def init_values():
     if 'init_cap' not in st.session_state: st.session_state.init_cap = 1000000
     if 'mon_inv' not in st.session_state: st.session_state.mon_inv = 10000
@@ -97,33 +110,41 @@ final = df.iloc[-1]
 
 # ================= 介面排版 =================
 
-# --- A. 頂部核心指標 ---
-st.markdown("<h2 style='text-align: center; color: #4B8BF5; margin-bottom: 30px;'>💰 專業資產增長計算機</h2>", unsafe_allow_html=True)
-
-m1, m2, m3 = st.columns(3)
-m1.metric("最終預估總資產", f"NT$ {final['總資產']:,}")
-m2.metric("總投入本金累積", f"NT$ {final['累積本金']:,}")
-m3.metric("時間複利獲利", f"NT$ {final['投資獲利']:,}")
-
-st.markdown("<br><br>", unsafe_allow_html=True)
+# --- A. 頂部自訂響應式數據卡片 (取代原本會截斷的 st.metric) ---
+metrics_html = f"""
+<div class="main-title">💰 專業資產增長計算機</div>
+<div class="dashboard-container">
+    <div class="kpi-card">
+        <div class="kpi-label">最終預估總資產</div>
+        <div class="kpi-value">NT$ {final['總資產']:,}</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">總投入本金累積</div>
+        <div class="kpi-value">NT$ {final['累積本金']:,}</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">時間複利獲利</div>
+        <div class="kpi-value">NT$ {final['投資獲利']:,}</div>
+    </div>
+</div>
+"""
+st.markdown(metrics_html, unsafe_allow_html=True)
 
 # --- B. 中間參數控制區 ---
-st.markdown("#### ⚙️ 投資參數設定")
 c1, c2 = st.columns(2)
 with c1:
-    st.number_input("初始資金 (NTD)", key='init_cap', step=10000, format="%d")
-    st.number_input("預期年化報酬率 (%)", key='rate', step=0.1, format="%.1f")
+    st.number_input("初始資金", key='init_cap', step=10000, format="%d")
+    st.number_input("年化報酬率 (%)", key='rate', step=0.1, format="%.1f")
 with c2:
-    st.number_input("每月定期定額 (NTD)", key='mon_inv', step=1000, format="%d")
+    st.number_input("每月投入", key='mon_inv', step=1000, format="%d")
     st.number_input("投資年限 (年)", key='yrs', step=1, format="%d")
 
-st.markdown("<br>", unsafe_allow_html=True)
 st.button("🔄 恢復預設數值", on_click=reset_values, use_container_width=True)
 
-st.markdown("<hr style='border: 1px solid #333;'>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 # --- C. 最下方年度明細表格 ---
-st.markdown("#### 📋 歷年資產增長明細表")
+st.markdown("#### 📋 歷年資產增長明細")
 
 styled_df = df.style.format({
     "累積本金": "{:,}",
@@ -131,4 +152,5 @@ styled_df = df.style.format({
     "總資產": "{:,}"
 })
 
-st.dataframe(styled_df, use_container_width=True, hide_index=True)
+# 設定表格高度，防止它在手機上過長
+st.dataframe(styled_df, use_container_width=True, hide_index=True, height=350)
