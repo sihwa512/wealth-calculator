@@ -108,3 +108,11 @@ with col_ctrl1:
     custom_stepper("預期年化報酬率 (%)", "rate", step=0.1, is_float=True)
 
 with col_ctrl2:
+    custom_stepper("每月定期定額 (NTD)", "mon_inv", step=1000)
+    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+    custom_stepper("投資年限 (年)", "yrs", step=1)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# --- 最底部：重設按鈕 ---
+st.button("🔄 重設數值", on_click=reset_values, use_container_width=True)
