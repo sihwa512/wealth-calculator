@@ -120,4 +120,15 @@ with c2:
 st.markdown("<br>", unsafe_allow_html=True)
 st.button("🔄 恢復預設數值", on_click=reset_values, use_container_width=True)
 
-st.markdown("<hr style='border: 1
+st.markdown("<hr style='border: 1px solid #333;'>", unsafe_allow_html=True)
+
+# --- C. 最下方年度明細表格 ---
+st.markdown("#### 📋 歷年資產增長明細表")
+
+styled_df = df.style.format({
+    "累積本金": "{:,}",
+    "投資獲利": "{:,}",
+    "總資產": "{:,}"
+})
+
+st.dataframe(styled_df, use_container_width=True, hide_index=True)
