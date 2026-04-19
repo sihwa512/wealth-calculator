@@ -7,7 +7,7 @@ st.set_page_config(page_title="資產增長計算機", layout="wide")
 # 2. 初始化預設數值
 default_values = {
     'init_cap': 1000000, 
-    'mon_inv': 30000, 
+    'mon_inv': 10000, 
     'rate': 6.5, 
     'yrs': 20
 }
